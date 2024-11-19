@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Over Under Dice Rolls</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #8B0000; /* Darker red */
+            color: #FFD700; /* Darker yellow */
+        }
+        .box {
+            border: 2px solid #FFD700;
+            padding: 20px;
+            display: inline-block;
+            text-align: center;
+            font-size: 0.9em;
+            margin: auto;
+        }
+        h1 {
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        h1 img {
+            margin: 0 10px;
+            height: 1.5em; /* Match the title size */
+            width: auto;
+        }
+        p {
+            text-align: center;
+        }
+        .dice-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px;
+        }
+        .dice {
+            font-size: 2em;
+            margin: 10px;
+        }
+        .result-message {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>
+            <img src="https://media.tenor.com/sUiwSBs8S6QAAAAj/dice-game.gif" alt="Dice Game" style="height: 1.5em;">
+            Over Under Dice Rolls
+            <img src="https://media.tenor.com/sUiwSBs8S6QAAAAj/dice-game.gif" alt="Dice Game" style="height: 1.5em;">
+        </h1>
+        <p><strong>Rules:</strong></p>
+        <p>1. The game is played by rolling 2 dice twice. Every player begins the game with 20 points. The object of the game is to accumulate points.</p>
+        <p>2. When the first roll occurs, the Roll_1 dice values and sum are set. After Roll_1, the player decides if the Roll_2 sum is likely to be over or under the Roll_1 sum. The player makes a wager based on their decision of over or under. Wagers can be from 0 to 10 points.</p>
+        <p>3. If the player bets OVER or UNDER correctly, the player wins the amount of the wager, and that value is added to their point total. If the player bets OVER or UNDER incorrectly, the player loses points in the amount of the wager, and that value is subtracted from the player's point total.</p>
+        <p><strong>Special Cases:</strong></p>
+        <p>1. If Roll_2 yields a double (e.g., 2,2 or 5,5), OR Roll_2 sum is the same as the Roll_1 sum, the round is lost, and the amount of the wager is subtracted from the player's point total. Note that the round is lost irrespective of the outcome of the over/under bet.</p>
+        <p>And that's the name of the game - <strong>OVER UNDER DOUBLE SAME!</strong> 🎲</p>
+        <p id="currentPoints"><strong>Current Points:</strong> 20</p>
+    </div>
+    <div>
+        <button onclick="rollDice1()">Roll 1</button>
+    </div>
+    <div class="dice-container" id="diceContainer1">
+        <div class="dice">🎲</div>
+        <div class="dice">🎲</div>
+    </div>
+    <p id="sum1"></p>
+    <div id="betSection" style="display:none;">
+        <p>Will the next roll be over or under?</p>
+        <input type="radio" id="over" name="bet" value="over">
+        <label for="over">Over</label>
+        <input type="radio" id="under" name="bet" value="under">
+        <label for="under">Under</label>
+        <br>
+        <p>Enter your wager (1-10 points):</p>
+        <input type="number" id="wager" min="1" max="10">
+        <button onclick="validateWager()">Submit Wager</button>
+    </div>
+    <div class="dice-container" id="diceContainer2" style="display:none;">
+        <div class="dice">🎲</div>
+        <div class="dice">🎲</div>
+    </div>
+    <p id="sum2"></p>
+    <div id="resultMessage" class="result-message"></div>
+    <script>
+        let points = 20;
+        let roll1Sum = 0;
+
+        function rollDice1() {
+            const dice1 = Math.floor(Math.random() * 6) + 1;
+            const dice2 = Math.floor(Math.random() * 6) + 1;
+            roll1Sum = dice1 + dice2;
+
+            document.getElementById('diceContainer1').innerHTML = `
+                <div class="dice">${dice1}</div>
+                <div class="dice">${dice2}</div>
+            `;
+            document.getElementById('sum1').innerText = `Sum: ${roll1Sum}`;
+
+            document.getElementById('betSection').style.display = 'block';
+        }
+
+        function validateWager() {
+            const wager = parseInt(document.getElementById('wager').value);
+            if (wager < 1 || wager > 10) {
+                alert("Please enter a wager between 1 and 10 points.");
+            } else {
+                rollDice2(wager);
+            }
+        }
+
+        function rollDice2(wager) {
+            const dice1 = Math.floor(Math.random() * 6) + 1;
+            const dice2 = Math.floor(Math.random() * 6) + 1;
+            const roll2Sum = dice1 + dice2;
+            const bet = document.querySelector('input[name="bet"]:checked').value;
+            let resultText = "";
+            let actualResult = roll2Sum > roll1Sum ? "over" : "under";
+
+            document.getElementById('diceContainer2').style.display = 'flex';
+            document.getElementById('diceContainer2').innerHTML = `
+                <div class="dice">${dice1}</div>
+                <div class="dice">${dice2}</div>
+            `;
+            document.getElementById('sum2').innerText = `Sum: ${roll2Sum}`;
+
+            setTimeout(() => {
+                if (dice1 === dice2 || roll2Sum === roll1Sum) {
+                    points -= wager;
+                    actualResult = "same";
+                    resultText = `Special case! You lost ${wager} points.`;
+                } else if (actualResult === bet) {
+                    points += wager;
+                    resultText = `You won ${wager} points!`;
+                } else {
+                    points -= wager;
+                    resultText = `You lost ${wager} points.`;
+                }
+
+                resultText += ` Your total points are now: ${points}`;
+                document.getElementById('currentPoints').innerText = `Current Points: ${points}`;
+
+                const endMessage = `
+                    Roll 1 Sum: ${roll1Sum}
+                    Roll 2 Sum: ${roll2Sum}
+                    Your Bet: ${bet}
+                    Your Wager: ${wager}
+                    Result: ${actualResult}
+                    ${resultText}
+                    Final Points: ${points}
+                `;
+                document.getElementById('resultMessage').innerText = endMessage;
+            }, 500); // Delay to show the roll 2 result before the message
+        }
+    </script>
+</body>
+</html>
